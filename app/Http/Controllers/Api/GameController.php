@@ -3,11 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\Game;
 use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Controllers\Api\NotFoundHttpException;
+use Illuminate\Support\Facades\DB;
 
 class GameController extends Controller
 {
@@ -62,7 +60,44 @@ class GameController extends Controller
     {
         $this->getUserById($id)->games()->delete();
         
-        return response()->json(['message' => 'Games have been deleted'], 200);
+        return response()->json(['message' => 'The games have been deleted'], 200);
+    }
+
+    //Rankings
+
+    public function indexRanking()
+{
+    $average = DB::table('users')->avg('rate');
+    $roundedAverage = round($average, 2);
+    $formattedAverage = number_format($roundedAverage, 2);
+
+    if ($formattedAverage < 0) {
+        $formattedAverage = 0;
+    } elseif ($formattedAverage > 100) {
+        $formattedAverage = 100;
+    }
+
+    return response()->json(['average_rate_throws_won' => $formattedAverage.' %'], 200);
+}
+
+    public function winnerRanking()
+    {
+        $user = DB::table('users')->orderByDesc('rate')->first();
+
+        return response()->json([
+            'user' => $user->name,
+            'rate' => $user->rate
+        ], 200);
+    }
+
+    public function loserRanking()
+    {
+        $user = DB::table('users')->orderBy('rate')->first();
+    
+        return response()->json([
+            'user' => $user->name,
+            'rate' => $user->rate
+        ], 200);
     }
     
 }
