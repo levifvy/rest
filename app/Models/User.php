@@ -7,11 +7,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
+use Spatie\Permission\Traits\HasRoles;
+
 
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles; 
 
     /**
      * The attributes that are mass assignable.
@@ -22,7 +24,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'email_verified_at'
+        'email_verified_at',
     ];
 
     /**
@@ -43,6 +45,17 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($user) {
+
+            if (empty($user->name)) {
+                $user->name = 'anonymous';            
+            }
+        });
+    }
 
     public function games()
     {
@@ -50,20 +63,17 @@ class User extends Authenticatable
     }
 
     public function putRateMark()
-{
-    $throw_Times = $this->games()->count();
-    $number_All_Games = intval($throw_Times);
+    {
+        $throw_Times = $this->games()->count();
+        $number_All_Games = intval($throw_Times);
 
-    $won_times = $this->games()->where('win', true)->count();
-    $numberGetSeven = intval($won_times);
+        $won_times = $this->games()->where('win', true)->count();
+        $numberGetSeven = intval($won_times);
 
-    $rate = round(($numberGetSeven / $number_All_Games) * 100, 2);
-    $this->rate = $rate;
-    $this->save();
+        $rate = round(($numberGetSeven / $number_All_Games) * 100, 2);
+        $this->rate = $rate;
+        $this->save();
 
-    return $rate;
-}
-
-            
-
+        return $rate;
+    }
 }

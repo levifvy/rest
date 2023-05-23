@@ -16,21 +16,21 @@ use App\Http\Controllers\Api\GameController;
 |
 */
 
-Route::post('login', [UserController::class, 'login']);
-Route::post('players', [UserController::class, 'register']);
+Route::post('login', [UserController::class, 'login'])->name('users.login');
+Route::post('players', [UserController::class, 'register'])->name('users.register');
 
 Route::middleware('auth:api')->group(function () {
     //users
-    Route::get('/players', [UserController::class, 'listPlayersRate']);
-    Route::put('players/{id}', [UserController::class, 'update']);
-    Route::post('logout', [UserController::class, 'logout']);
+    Route::get('/players', [UserController::class, 'listPlayersRate'])->name('players.listPlayersRate')->middleware('role:admin');
+    Route::put('players/{id}', [UserController::class, 'update'])->name('players.update')->middleware('role:player');
+    Route::post('logout', [UserController::class, 'logout'])->name('players.logout')->middleware('role:admin,player');
     //games
-    Route::post('players/{id}/games', [GameController::class, 'throwingDices']);
-    Route::get('players/{id}/games', [GameController::class, 'listThrowedGames']);
-    Route::delete('/players/{id}/games', [GameController::class, 'deleteAllThrowsOfAPlayer']);
+    Route::post('players/{id}/games', [GameController::class, 'throwingDices'])->name('players.throwingDices')->middleware('role:player');
+    Route::get('players/{id}/games', [GameController::class, 'listThrowedGames'])->name('players.listThrowedGames')->middleware('can:players.listThrowedGames');
+    Route::delete('/players/{id}/games', [GameController::class, 'deleteAllThrowsOfAPlayer'])->name('players.deleteAllThrowsOfAPlayer')->middleware('role:player');
     //rankings
-    Route::get('/players/ranking', [GameController::class, 'indexRanking']);
-    Route::get('/players/ranking/winner', [GameController::class, 'winnerRanking']);    
-    Route::get('/players/ranking/loser', [GameController::class, 'loserRanking']);
+    Route::get('/players/ranking', [GameController::class, 'indexRanking'])->name('players.indexRanking')->middleware('role:admin');
+    Route::get('/players/ranking/winner', [GameController::class, 'winnerRanking'])->name('players.winnerRanking')->middleware('role:admin');    
+    Route::get('/players/ranking/loser', [GameController::class, 'loserRanking'])->name('players.loserRanking')->middleware('role:admin');
 
 });

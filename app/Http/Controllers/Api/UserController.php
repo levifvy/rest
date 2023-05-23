@@ -4,22 +4,17 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-//use App\Http\Controllers\Api\request;
 use App\Models\User;
-use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
-
-
 
 class UserController extends Controller
 {
      
     public function listPlayersRate()
     {
-       return response()->json(['message' => 'List of all Players with average of percentage achievements.', User::select('name', 'rate')->get()], 200);
+       return response()->json(['message' => 'List of all Players with average of percentage achievements.', User::select('nickname', 'rate')->get()], 200);
     }
 
     public function login(Request $request)
@@ -50,9 +45,10 @@ class UserController extends Controller
        
         $data = $request->all();
         $validator = Validator::make($data, [
-            'name' => 'required|min:4|unique:users',
+            'name' => 'unique:users',
             'email' => 'required|email|unique:users',
-            'password' => 'required|min:6'
+            'password' => 'required|min:5',
+            'email_verified_at' => now(),
         ]);
 
         if($validator->fails()){
@@ -63,13 +59,14 @@ class UserController extends Controller
                 'email' => $request->email,
                 'password' => bcrypt($request->password),
             ]);
-            $token = $user->createToken('Personal Access Token')->accessToken;
 
             $user->nickname = !empty($user->name) ? Str::slug($user->name) : 'anonymous';
 
             $user->save();
 
-        return response()->json(['message' => 'Successfully user registered','user' => $user->name, 'email' => $user->email, 'Personal Access Token' => $token], 200);
+            $token = $user->createToken('Personal Access Token')->accessToken;
+
+            return response()->json(['message' => 'Successfully user registered','user' => $user->name, 'email' => $user->email, 'Personal Access Token' => $token], 200);
         }
     }
 

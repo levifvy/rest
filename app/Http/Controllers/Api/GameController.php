@@ -17,9 +17,12 @@ class GameController extends Controller
 
         return $game; 
     }
-    public function listThrowedGames($id)
-    {
-        return response()->json($this->getUserById($id)->games, 200);
+    public function listThrowedGames($id, User $user)
+    {   
+        $user = User::find($id);
+        return response()->json(['player' =>$user->nickname,
+                                'average_rate' => $user->rate, 
+                                'all_games' => $this->getUserById($id)->games], 200);
     }
 
     private function playGame()
@@ -42,19 +45,19 @@ class GameController extends Controller
     }
 
     private function getUserById($id)
-{
-    $user = User::find($id);
-    
-    if (!$user) {
-        return response()->json(['error' => 'This user was not found'], 404);
+    {
+        $user = User::find($id);
+        
+        if (!$user) {
+            return response()->json(['error' => 'This user was not found'], 404);
+        }
+        
+        if (Auth::user()->id != $user->id) {
+            return response()->json(['error' => 'This user is Unauthorized'], 401);
+        }
+        
+        return $user;
     }
-    
-    if (Auth::user()->id != $user->id) {
-        return response()->json(['error' => 'This user is Unauthorized'], 401);
-    }
-    
-    return $user;
-}
 
     public function deleteAllThrowsOfAPlayer($id)
     {
@@ -85,7 +88,7 @@ class GameController extends Controller
         $user = DB::table('users')->orderByDesc('rate')->first();
 
         return response()->json([
-            'user' => $user->name,
+            'user' => $user->nickname,
             'rate' => $user->rate
         ], 200);
     }
@@ -95,7 +98,7 @@ class GameController extends Controller
         $user = DB::table('users')->orderBy('rate')->first();
     
         return response()->json([
-            'user' => $user->name,
+            'user' => $user->nickname,
             'rate' => $user->rate
         ], 200);
     }
