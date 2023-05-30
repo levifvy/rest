@@ -7,6 +7,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 use App\Models\User;
 use App\Models\Game;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,34 +16,38 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-         // \App\Models\User::factory(10)->create();
+        // $this->call(RoleSeeder::class);
+        
 
-         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'nickname' => 'test-user',
-            'email_verified_at' => now(),
-            'password' => bcrypt(654321), // password
-            'remember_token' => Str::random(10),
-         ]);
+        // $admin = User::create([
+        //     'name' => 'admin',
+        //     'nickname' => Str::slug('admin'),
+        //     'email' => 'admin@admin.com',
+        //     'email_verified_at' => now(),
+        //     'password' => Hash::make('123456'), // 123456
+        //     'rate' => number_format(mt_rand(0, 10000) / 100, 2),
+        //     'remember_token' => Str::random(10),
+        // ]);
+        // $admin->assignRole('admin');
 
-        //$this->call(RoleSeeder::class);
+        // $name = 'Levi Flores';
+        // User::create([
+        //     'name' => $name,
+        //     'nickname' => Str::slug($name),
+        //     'email' => 'levi@manager.com',
+        //     'email_verified_at' => now(),
+        //     'password' => Hash::make('123456'), // 123456
+        //     'rate' => number_format(mt_rand(0, 10000) / 100, 2),
+        //     'remember_token' => Str::random(10),
+        // ])->assignRole('player');
+      
 
-        /* User::create([
-            'name' => 'Administrator',
-            'email' => 'admin@example.com',
-            'email_verified_at' => now(),
-            'password' => bcrypt(654321), // password
-            'remember_token' => Str::random(10),
-            
-         ]);*/
-
-         
         User::factory(2)
-            ->has(Game::factory()->count(3))
-            ->create()
-            ->each(function ($user) {
-                //;
-            });
+        ->has(Game::factory()->count(3))
+        ->create()
+        ->each(function ($user) {
+           // $user->assignRole('player');
+        });
+
     }
 }
