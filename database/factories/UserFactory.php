@@ -2,13 +2,14 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Database\Eloquent\Factories\Factory as EloquentFactory;
 use Illuminate\Support\Str;
+use Faker\Factory as FakerFactory;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
  */
-class UserFactory extends Factory
+class UserFactory extends EloquentFactory
 {
     /**
      * Define the model's default state.
@@ -17,15 +18,15 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
-        $name = fake()->name();
+        $name = FakerFactory::create()->name();
         return [
             'name' => $name,
             'nickname' => Str::slug($name),
-            'email' => fake()->unique()->safeEmail(),
+            'email' => FakerFactory::create()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', //password
             'remember_token' => Str::random(10),
-            'rate' => fake()->randomFloat(2, 0, 100)
+            'rate' => FakerFactory::create()->randomFloat(2, 0, 100)
         ];
     }
 

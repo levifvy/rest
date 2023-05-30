@@ -8,12 +8,13 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Passport\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
-
+use App\Models\Request;
 
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles; 
+    use HasApiTokens, HasFactory, Notifiable; 
+    // use HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -22,9 +23,11 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'name',
+        'nickname',
         'email',
         'password',
         'email_verified_at',
+        'remember_token'
     ];
 
     /**
@@ -44,18 +47,20 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
+        //'password' => 'hashed',
     ];
-    protected static function boot()
-    {
-        parent::boot();
+    // protected static function boot()
+    // {
+    //     parent::boot();
 
-        static::creating(function ($user) {
+    //     static::creating(function ($user) {
 
-            if (empty($user->name)) {
-                $user->name = 'anonymous';            
-            }
-        });
-    }
+    //         if (empty($user->name)) {
+    //             $user->name = 'anonymous';            
+    //         }
+    //     });
+        
+    // }
 
     public function games()
     {
@@ -75,5 +80,5 @@ class User extends Authenticatable
         $this->save();
 
         return $rate;
-    }
+    }   
 }
