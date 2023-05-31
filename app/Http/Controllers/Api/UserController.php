@@ -15,9 +15,9 @@ class UserController extends Controller
 {
     public function listPlayersRate()
     {
-        // if (!Auth::user()->hasRole('admin')) {
-        //     return response()->json(['error' => 'You are unauthorized to access this resource'], 401);
-        // }
+        if (!Auth::user()->hasRole('admin')) {
+            return response()->json(['error' => 'You are unauthorized to access this resource'], 401);
+        }
 
         $players = User::select('nickname', 'rate')->get();
 
@@ -58,8 +58,6 @@ class UserController extends Controller
         }
     }
 
-
-
     public function register(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -78,8 +76,8 @@ class UserController extends Controller
                 'password' => Hash::make($request->password),
                 'email_verified_at' => now(),
                 'remember_token' => Str::random(10)
-            ]);
-            // ->assignRole('player')
+            ])->assignRole('player');
+            // 
             $token = $user->createToken('auth_token')->accessToken;
 
             return response()->json([
@@ -92,7 +90,7 @@ class UserController extends Controller
         }
     }
 
-    public function update(Request $request, string $id)
+    public function update(Request $request, $id)
     {
         $user = User::find($id);
 
@@ -100,8 +98,9 @@ class UserController extends Controller
             return response()->json(['message' => 'User not found'], 404);
         }
 
-        if (Auth::user()->id !== $user->id) {
-            return response()->json(['error' => 'This user is unauthorized'], 401);
+        if ( !Auth::user()->hasRole('admin') && Auth::user()->id != $id) {
+            return response()->json(['error' => $id], 401);
+            // return response()->json(['error' => 'This user is unauthorized'], 401);
         }
 
         $user->name = $request->input('name');
@@ -119,4 +118,20 @@ class UserController extends Controller
         return response()->json(['message' => 'This session was logged out successfully'], 200);
 
     }
+
+    public function show($id)
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json(['error' => 'This user was not found'], 404);
+        }
+
+        if (!Auth::user()->hasRole('admin') && Auth::user()->id != $user->id) {
+            return response()->json(['error' => 'You are unauthorized to view this user'], 401);
+        }
+
+        return response()->json($user, 200);
+    }
+    
 }
