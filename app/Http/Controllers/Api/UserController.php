@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 
-
 class UserController extends Controller
 {
     public function listPlayersRate()
@@ -99,8 +98,8 @@ class UserController extends Controller
         }
 
         if ( !Auth::user()->hasRole('admin') && Auth::user()->id != $id) {
-            return response()->json(['error' => $id], 401);
-            // return response()->json(['error' => 'This user is unauthorized'], 401);
+
+            return response()->json(['error' => 'This user is unauthorized'], 401);
         }
 
         $user->name = $request->input('name');
@@ -116,22 +115,5 @@ class UserController extends Controller
         $token->revoke();
 
         return response()->json(['message' => 'This session was logged out successfully'], 200);
-
-    }
-
-    public function show($id)
-    {
-        $user = User::find($id);
-
-        if (!$user) {
-            return response()->json(['error' => 'This user was not found'], 404);
-        }
-
-        if (!Auth::user()->hasRole('admin') && Auth::user()->id != $user->id) {
-            return response()->json(['error' => 'You are unauthorized to view this user'], 401);
-        }
-
-        return response()->json($user, 200);
-    }
-    
+    } 
 }

@@ -32,6 +32,4 @@ Route::middleware('auth:api')->group(function () {
     Route::get('/players/ranking', [GameController::class, 'indexRanking'])->name('players.indexRanking')->middleware('role:admin');
     Route::get('/players/ranking/winner', [GameController::class, 'winnerRanking'])->name('players.winnerRanking')->middleware('role:admin');    
     Route::get('/players/ranking/loser', [GameController::class, 'loserRanking'])->name('players.loserRanking')->middleware('role:admin');
-    //show
-    Route::get('players/show', [UserController::class, 'show'])->name('players.show')->middleware('role:player');
 });
