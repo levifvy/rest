@@ -68,4 +68,43 @@ class UserControllerTest extends TestCase
 
          
     }
+
+    /** @test */
+    public function test_Update_User()
+    {
+        $user = factory(User::class)->create();
+
+        $response = $this->put('/user/' . $user->id, [
+            'name' => 'Updated Name',
+            'email' => 'updated@example.com',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'name' => 'Updated Name',
+            'email' => 'updated@example.com',
+        ]);
+    }
+
+    /** @test */
+    public function test_user_can_logout_successfully()
+    {
+        
+        $user = User::factory()->create();
+        $token = $user->createToken('auth_token')->accessToken;
+        $headers = ['Authorization' => 'Bearer ' . $token];
+
+        // Hacer la solicitud de logout
+        $response = $this->postJson(route('users.logout'), [], $headers);
+
+        
+        $response->assertStatus(200)
+            ->assertJson([
+                'message' => 'This session was logged out successfully',
+            ]);
+
+        
+        $this->assertNull($user->fresh()->token());
+    }
 }
