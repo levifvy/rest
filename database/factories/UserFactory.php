@@ -3,8 +3,12 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory as EloquentFactory;
+use Illuminate\Foundation\Auth\User;
 use Illuminate\Support\Str;
 use Faker\Factory as FakerFactory;
+use Illuminate\Support\Facades\Hash;
+
+use Spatie\Permission\Models\Role;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
@@ -24,7 +28,7 @@ class UserFactory extends EloquentFactory
             'nickname' => Str::slug($name),
             'email' => FakerFactory::create()->unique()->safeEmail(),
             'email_verified_at' => now(),
-            'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', //password
+            'password' => Hash::make('123456'), // 123456
             'remember_token' => Str::random(10),
             'rate' => FakerFactory::create()->randomFloat(2, 0, 100)
         ];
@@ -39,4 +43,14 @@ class UserFactory extends EloquentFactory
             'email_verified_at' => null,
         ]);
     }
+
+
+    public function configure()
+{
+    return $this->afterCreating(function (User $user) {
+        $role = Role::findOrCreate('player');
+        $user->assignRole($role);
+    });
+}
+
 }
