@@ -11,12 +11,6 @@ use Illuminate\Support\Facades\Hash;
 use Tests\Feature\Auth;
 use Illuminate\Support\Facades\Artisan;
 
-
-use Illuminate\Foundation\Testing\DatabaseTransactions;
-use Laravel\Passport\Passport;
-use Tests\Feature\faker;
-use Illuminate\Support\Str;
-
 class UserControllerTest extends TestCase
 {
     use RefreshDatabase;
@@ -42,69 +36,94 @@ class UserControllerTest extends TestCase
    public function test_user_can_login_successfully()
    {
        Artisan::call('migrate');
-       $this->withoutExceptionHandling();
+       
        $user = User::factory()->create();
-       $this->actingAs($user);
-       $carry = $this->postJson(route('users.login'), ['email' => $user->email, 'password' => 'password']);
-       $carry->assertStatus(401);
+
+        $response = $this->postJson(route('users.login'), [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'message',
+                'user',
+                'token',
+            ]);
        }
 
      /** @test */
-    public function test_user_is_registered()
+    public function test_user_is_registered_as_expected()
     {
        
         Artisan::call('migrate');
         
 
-        $data = ([  
-                    'name' => 'testing',
-                    'email' => 'test@testing.es',
-                    'password' => Hash::make('123456')
-    ]);
-    
+        $response = $this->postJson(route('users.register'), [
+            'name' => 'John Doe',
+            'email' => 'johndoe@example.com',
+            'password' => 'password',
+        ]);
 
-        $response = $this->postJson(route('users.register'), $data);
-         $response->assertStatus[200];
-
-         
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'message',
+                'user',
+                'id',
+                'email',
+                'Token',
+            ]);
     }
 
     /** @test */
-    public function test_Update_User()
+    public function test_Update_User_can_do_successfully()
     {
-        $user = factory(User::class)->create();
+        $user = User::factory()->create();
 
-        $response = $this->put('/user/' . $user->id, [
-            'name' => 'Updated Name',
-            'email' => 'updated@example.com',
-        ]);
+        $response = $this->actingAs($user)
+            ->put(route('players.update', $user->id), [
+                'name' => 'John Doe',
+            ]);
 
-        $response->assertStatus(200);
-        $this->assertDatabaseHas('users', [
-            'id' => $user->id,
-            'name' => 'Updated Name',
-            'email' => 'updated@example.com',
-        ]);
+        $response->assertStatus(200)
+            ->assertJson([
+                'message' => 'User updated successfully',
+                'user' => 'john-doe',
+            ]);
     }
 
     /** @test */
     public function test_user_can_logout_successfully()
     {
-        
         $user = User::factory()->create();
-        $token = $user->createToken('auth_token')->accessToken;
-        $headers = ['Authorization' => 'Bearer ' . $token];
 
-        // Hacer la solicitud de logout
-        $response = $this->postJson(route('users.logout'), [], $headers);
+        $response = $this->actingAs($user)
+            ->postJson(route('players.logout'));
 
-        
         $response->assertStatus(200)
             ->assertJson([
                 'message' => 'This session was logged out successfully',
             ]);
+    }
 
-        
-        $this->assertNull($user->fresh()->token());
+    /** @test */
+    public function test_list_players_rate_get_by_admin()
+    {
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+
+        $response = $this->actingAs($admin)
+            ->get(route('players.listPlayersRate'));
+
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'message',
+                'players' => [
+                    '*' => [
+                        'nickname',
+                        'rate',
+                    ],
+                ],
+            ]);
     }
 }
