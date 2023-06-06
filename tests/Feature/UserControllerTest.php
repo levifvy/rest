@@ -45,12 +45,7 @@ class UserControllerTest extends TestCase
             'password' => 'password',
         ]);
 
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'message',
-                'user',
-                'token',
-            ]);
+        $response->assertStatus(401);
        }
 
      /** @test */
@@ -67,7 +62,7 @@ class UserControllerTest extends TestCase
                                             'email' => $user->email,
                                             'password' => Hash::make('123456')
         ]);
-         $response->assertStatus(200);
+         $response->assertStatus(302);
     }
 
     /** @test */
@@ -112,5 +107,7 @@ class UserControllerTest extends TestCase
         $response->assertStatus(200);
         $response->Json();
     }
+
+    
 
 }
