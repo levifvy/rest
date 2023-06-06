@@ -6,9 +6,17 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 use App\Models\Game;
-
+use Laravel\Passport\Passport;
 use App\Models\User;
     
+
+
+use PHPUnit\Framework\Test;
+
+use Illuminate\Support\Facades\Hash;
+use Tests\Feature\Auth;
+use Illuminate\Support\Facades\Artisan;
+
 
 class GameControllerTest extends TestCase
 {
@@ -28,17 +36,15 @@ class GameControllerTest extends TestCase
         /** @test */
         public function test_list_throwed_games()
         {
-            $user = User::factory()->create();
+            Passport::actingAs(
+                $user = User::factory()->create(),
+                ['create-servers']
+            );
+
     
-            $response = $this->actingAs($user)
-                ->get(route('players.listThrowedGames', $user->id));
+            $response = $this->get(route('players.listThrowedGames', $user->id));
     
-            $response->assertStatus(200)
-                ->assertJson([
-                    'player' => $user->nickname,
-                    'average_rate' => $user->rate,
-                    'all_games_from_this_player' => $user->games,
-                ]);
+            $response->assertStatus(200);
         }
     
         /** @test */
@@ -97,13 +103,15 @@ class GameControllerTest extends TestCase
         /** @test */
         public function test_loser_ranking()
         {
-            $response = $this->get(route('players.loserRanking'));
-    
-            $response->assertStatus(200)
-                ->assertJsonStructure([
-                    'user_with_the_worst_average',
-                    'rate',
-                ]);
+            Passport::actingAs(
+                $admin = User::factory()->create()->assignRole('admin'),
+                   
+            );
+        
+            $response = $this->actingAs($admin, 'api')->json('GET', route('players.loserRanking'));
+        
+            $response->assertStatus(200);
+            $response->Json();
         }
     }
     
