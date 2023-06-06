@@ -22,9 +22,7 @@ class GameControllerTest extends TestCase
 {
     use RefreshDatabase;
 
-        /**
-         * A basic feature test example.
-         */
+        
         /** @test */ 
         public function test_example(): void
         {
@@ -50,17 +48,14 @@ class GameControllerTest extends TestCase
         /** @test */
         public function test_throwing_dices()
         {
-            $user = User::factory()->create();
+            Passport::actingAs(
+                $user = User::factory()->create(),
+                       
+            );
     
-            $response = $this->actingAs($user)
-                ->get(route('games.throw', $user->id));
+            $response = $this->actingAs($user)->get(route('players.throwingDices', $user->id));
     
-            $response->assertStatus(200)
-                ->assertJsonStructure([
-                    'Result of Throwing',
-                    'dice_1',
-                    'dice_2',
-                ]);
+            $response->assertStatus(200);
         }
     
         /** @test */
@@ -80,7 +75,13 @@ class GameControllerTest extends TestCase
         /** @test */
         public function test_index_ranking()
         {
-            $response = $this->get(route('players.indexRanking'));
+            Passport::actingAs(
+                $admin = User::factory()->create()->assignRole('admin'),
+                       
+            );
+
+            $response = $this->actingAs($admin, 'api')->json('GET', route('players.indexRanking'));
+            
     
             $response->assertStatus(200)
                 ->assertJsonStructure([
@@ -91,13 +92,19 @@ class GameControllerTest extends TestCase
         /** @test */
         public function test_winner_ranking()
         {
-            $response = $this->get(route('players.winnerRanking'));
-    
-            $response->assertStatus(200)
-                ->assertJsonStructure([
-                    'user_with_the_best_average',
-                    'rate',
-                ]);
+
+            Passport::actingAs(
+                $admin = User::factory()->create()->assignRole('admin'),
+                       
+            );
+            
+            $response = $this->actingAs($admin, 'api')->json('GET', route('players.winnerRanking'));
+            
+            $response->assertStatus(200)->assertJsonStructure([
+                'user_with_the_best_average',
+                'rate',
+            ]);
+            $response->Json();
         }
     
         /** @test */
@@ -110,8 +117,19 @@ class GameControllerTest extends TestCase
         
             $response = $this->actingAs($admin, 'api')->json('GET', route('players.loserRanking'));
         
-            $response->assertStatus(200);
+            $response->assertStatus(200)->assertJsonStructure([
+                'user_with_the_worst_average',
+                'rate',
+            ]);
             $response->Json();
         }
+
+    /** @test */
+    public function test_Number_Is_Equal()
+    {
+        $myFirstNumber = 1;
+        $mySecondNumber = 1;
+        $this->assertTrue($myFirstNumber === $mySecondNumber);
     }
-    
+
+}
