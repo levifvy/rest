@@ -61,7 +61,10 @@ class GameControllerTest extends TestCase
         /** @test */
         public function test_delete_all_throws_of_a_player()
         {
-            $user = User::factory()->create();
+            Passport::actingAs(
+                $user = User::factory()->create()->assignRole('player'),
+                       
+            );
     
             $response = $this->actingAs($user)
                 ->delete(route('players.deleteAllThrowsOfAPlayer', $user->id));
