@@ -4,6 +4,9 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\User;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionServiceProvider;
+use Spatie\Permission\PermissionRegistrar;
 
 
 /**
@@ -29,5 +32,15 @@ class GameFactory extends Factory
             'win' => $win,
             
         ];
+    }
+
+    public function configure()
+    {
+        return $this->afterCreating(function (User $user) {
+            $role = Role::findOrCreate('player');
+            $user->assignRole($role);
+            $role = Role::findOrCreate('admin');
+            $user->assignRole($role);
+        });
     }
 }

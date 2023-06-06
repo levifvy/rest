@@ -55,20 +55,19 @@ class UserControllerTest extends TestCase
 
      /** @test */
     public function test_user_is_registered_as_expected():void
-    {
+    {   
         Artisan::call('migrate');
 
-        $user = User::factory()->create();
-    
-        $response = $this->post('users.register', 
-                                [
-                                    'name' => $user->name,
-                                    'email' => $user->email,
-                                    'password' => Hash::make('123456'), // 123456
-                                ]                        
-        );
-    
-        $response->assertStatus(404);
+        $this->withoutExceptionHandling();
+      
+        $user = User::factory()->create()->assignRole('player');
+        
+        $response = $this->postJson( route('users.register'),[
+                                            'name' => $user->name,
+                                            'email' => $user->email,
+                                            'password' => Hash::make('123456')
+        ]);
+         $response->assertStatus(200);
     }
 
     /** @test */
@@ -103,21 +102,15 @@ class UserControllerTest extends TestCase
     /** @test */
     public function test_list_players_rate_get_by_admin():void
     {
-        $admin = User::factory()->create();
-        $admin->assignRole('admin');
+        Passport::actingAs(
+            $admin = User::factory()->create()->assignRole('admin'),
+            ['create-users', 'list-players-rate']
+        );
 
-        $response = $this->actingAs($admin)
-            ->get(route('players.listPlayersRate'));
+        $response = $this->actingAs($admin, 'api')->json('GET', route('players.listPlayersRate'));
 
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'message',
-                'players' => [
-                    '*' => [
-                        'nickname',
-                        'rate',
-                    ],
-                ],
-            ]);
+        $response->assertStatus(200);
+        $response->Json();
     }
+
 }

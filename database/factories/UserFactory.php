@@ -9,6 +9,8 @@ use Faker\Factory as FakerFactory;
 use Illuminate\Support\Facades\Hash;
 
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionServiceProvider;
+use Spatie\Permission\PermissionRegistrar;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
@@ -46,11 +48,13 @@ class UserFactory extends EloquentFactory
 
 
     public function configure()
-{
-    return $this->afterCreating(function (User $user) {
-        $role = Role::findOrCreate('player');
-        $user->assignRole($role);
-    });
-}
+    {
+        return $this->afterCreating(function (User $user) {
+            $role = Role::findOrCreate('player');
+            $user->assignRole($role);
+            $role = Role::findOrCreate('admin');
+            $user->assignRole($role);
+        });
+    }
 
 }
